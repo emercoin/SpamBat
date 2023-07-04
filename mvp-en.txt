@@ -1,0 +1,144 @@
+Quick notes on using MVP for the SpamBat anti-spam system
+
+Why is the project called SpamBat?
+Because it's the opposite of Spam bots that bombard people with spam.
+And truly decentralized. That is, in fact, a spam bot on the contrary.
+That's why the name is like this.
+Another association with a bat that devours all sorts of bugs.
+
+
+Background
+
+The fight against spam has been going on for decades, and radical success is not expected.
+The reason for this state of affairs is that until now, anti-spam protection is "on the defensive".
+A spammer risks almost nothing by sending out their spam (or making fraudulent phone calls),
+and the communication overhead is negligible.
+
+
+Project idea
+
+The idea is for the sender to be financially responsible for their messages.
+The responsibility is what the sender attaches to their message
+"postage stamp" - a transaction in cryptocurrency that, if published in the blockchain, burns the sender's money.
+Anyone can make a post, but it is assumed that the recipient of the message does it
+in the case when he has a desire to punish the sender for any obscenity.
+
+The message transmission system on the recipient side validates the stamp, and if there is no stamp, then the stamp will be returned.,
+or it doesn't contain a payment - it just ignores the incoming message.
+
+In the case of a valid stamp, and if the message is correct, the recipient simply receives the message without doing anything.
+At the same time, nothing gets into the blockchain, and later the stamp can be reused in another message.,
+alternatively, coins linked in the mark can be extracted and floated in a different type of transaction.
+
+If the recipient regards the message as spam, then it publishes the transaction to the blockchain.,
+by burning the sender's money, it punishes the latter, and thus expresses its dissatisfaction.
+
+Coin burning is a key part of the system. This ensures that the recipient has no other incentive to publish
+transactions are nothing but punishing the sender. If b say the transaction transferred b coins
+somewhere, the recipient would also have an incentive to enrich someone.
+
+
+Architecture
+
+The architecture is considered as applied to email spam, but can be adapted
+for other systems - VOIP connections, protection against DOS attacks, and so on.
+
+The system includes 3 Emercoin wallets:
+ - From which payments are made for creating stamps - W0
+ - Where UTXO stamps are stored - W1
+ - Through which the recipient validates or redeems the stamps - WX.
+
+WX is not revelabt with W0/W1 wallets, and it may even be locked.
+
+Abbreviation UTXO is Unspent Transaction Output.
+Represents the payment output of a transaction for a fixed amount that someone can spend,
+by creating another transaction(including the stamp).
+
+I recommend attaching the stamp to the message (or outgoing VOIP packet),
+by adding an extension string to the header:
+
+X-SpamBat: <base64 from the hex-a transaction contained in the file stamps.txt>
+
+The string must be immutable, so that different mailers that have implemented this system,
+they could work out each other's brands correctly.
+
+1. File config-lite.php
+It must contain a single line in the php wrapper-the URL for accessing the wallet via the JSON RPC API.
+A string of the form:
+<?php
+$emcCONNECT = "http://username:secret_password@localhost:6662";
+?>
+The parameters must match those from emeroin. conf
+
+Further. All operations with renaming wallets and so on should only be performed when the node is turned off!
+
+1. The script W1_generate_addr_pool.php
+
+This script is supposed to work with the W1 wallet.
+You only need to run it to create a pool of addresses, that is, once.
+
+It is best to create a new wallet for them.
+You need to rename the standard wallet. dat to something like wallet. dat-main
+After that, launch the node (wallet). It will create a new empty wallet. dat.
+After that, run the script W1_generate_addr_pool.php
+It connects to the node and creates a pool of addresses for future transactions.
+The list of addresses writes to addr_pool.txt.
+The number of addresses is set in the AddrPoolSize config parameter
+Default is 20, you can set up to 200. You can try more, I didn't check it out.
+I think you can catch up to 1000.
+This determines the maximum number of outputs in the
+the only transaction that will generate UTXOs for future stamps.
+
+That's all, the program worked, and the addresses were recorded in the file.
+
+While we stop working with W1, we return to W0, where we will pay for future stamps.
+To do this, stop the node and switch the wallet.dat file back.
+You can make two names, such as:
+ - wallet.dat-main # W0
+ - wallet.dat-spambat # W1
+and switch the simlink between them.
+The script setw.sh designed for easy switching of the simlink to the corresponding wallet file on Linux.
+
+2. Script W0_generate_N_UTXO.php
+This script works with the main wallet, where there is a balance.
+At the start, it takes the number of future UTXOs for stamps as a parameter.
+Then it creates a single transaction that spends money from the W0 wallet,
+and creates a transaction with N outputs sent to wallet W1 (where the stamps are).
+N - the smaller of 3x:
+ - Number set by the user
+ - Size of the actual address pool
+ - Number of addresses from the AddrPoolSize parameter
+
+The script can be run several times, and it will create one transaction per run,
+And this way, you can print as many UTXOs as you need.
+
+Money in such a transaction is taken from W0 and transferred to W1. The amount of each output is equal to the price of the stamp.
+Set by the StampPrice parameter.
+
+After the transactions are created and accepted in the blockchain, we proceed to printing stamps.
+
+3. Script W1_generate_stamps.php
+This script reads the stamp file stamps.txt, and writes stamps.txt. out at the output
+At the same time, it removes empty lines and comments from the input file, as well as stamp transactions that were redeemed.
+Each line of the file has 3 columns:
+ - Date of sending. It is not used by the script, but it is useful for the mailer that marks when this stamp was sent.
+ - The actual transaction is a stamp that needs to be transcoded to base64 to reduce the size, and enter the result in the header.
+ - Price of the stamp. It is not used by the system, but it is easy to view, especially after changing the StampPrice parameter.
+After copying and clearing, the program extracts from the wallet a list of UTXOs generated in phase [2] and not used
+in the stamps that were just copied, then generates new stamps by adding them to the output file.
+Stamps are generated for all UTXOs from the W1 wallet that were not found during the copying process.
+
+Thus, we get a file, each line of which contains a stamp. Moreover, it contains both old active stamps and freshly printed ones.
+
+4. Script WX_stamp_price.php
+The script takes a hex transaction-stamp as a parameter, and prints the price of the stamp at the output.
+If you typed "0", it means that the stamp is invalid (it was already redeemed, or there is an incorrect transaction at all).
+We only trust the brands that the value is returned to != 0.
+And we use the value to determine how much the sender can be punished with this stamp.
+
+5. Script WX_redeem_stamp.php
+The script takes a hex transaction-stamp as a parameter, and sends it to the blockchain, thereby redeeming it. Prints the resulting TXID.
+Here it is impossible to distinguish whether the transaction was redeemed earlier or not. The response is always valid if the transaction is syntactically correct.
+If you need to check for validity, then first [4], and then you can send it.
+Note that sending a duplicate is a cheaper operation than validating it. Therefore, if it is possible not to check , you don't need to check.
+
