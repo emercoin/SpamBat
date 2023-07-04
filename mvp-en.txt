@@ -20,10 +20,10 @@ Project idea
 The idea is for the sender to be financially responsible for their messages.
 The responsibility is what the sender attaches to their message
 "postage stamp" - a transaction in cryptocurrency that, if published in the blockchain, burns the sender's money.
-Anyone can make a post, but it is assumed that the recipient of the message does it
+Anyone can perform a publication, but it is assumed that the recipient of the message does it
 in the case when he has a desire to punish the sender for any obscenity.
 
-The message transmission system on the recipient side validates the stamp, and if there is no stamp, then the stamp will be returned.,
+The message transmission system on the recipient side validates the stamp, and if there is no stamp, then the stamp will be returned,
 or it doesn't contain a payment - it just ignores the incoming message.
 
 In the case of a valid stamp, and if the message is correct, the recipient simply receives the message without doing anything.
