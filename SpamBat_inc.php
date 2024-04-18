@@ -65,7 +65,7 @@ function EMC_req($cmd, $params, $errtxt) {
     }
     return $rc['result'];
   } while(false);
-  // Eror handler
+  // Error handler
   printf("%s\nFail request details: cmd=[%s] and params:\n", $errtxt, $cmd);
   print_r($params);
   exit(1);
