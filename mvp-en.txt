@@ -109,7 +109,7 @@ N - the smaller of 3x:
  - Size of the actual address pool
  - Number of addresses from the AddrPoolSize parameter
 
-The script can be runned several times, and it will create one transaction per run,
+The script can be ran several times, and it will create one transaction per run,
 And this way, you can print as many UTXOs as you need.
 
 Money in such a transaction is taken from W0 and transferred to W1. The amount of each output is equal to the price of the stamp.
