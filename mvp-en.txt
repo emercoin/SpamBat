@@ -48,7 +48,7 @@ The system includes 3 Emercoin wallets:
  - Where UTXO stamps are stored - W1
  - Through which the recipient validates or redeems the stamps - WX.
 
-WX is not revelabt with W0/W1 wallets, and it may even be locked.
+WX is not revelant with W0/W1 wallets, and it may even be locked.
 
 Abbreviation UTXO is Unspent Transaction Output.
 Represents the payment output of a transaction for a fixed amount that someone can spend,
@@ -68,7 +68,7 @@ A string of the form:
 <?php
 $emcCONNECT = "http://username:secret_password@localhost:6662";
 ?>
-The parameters must match those from emeroin. conf
+The parameters must match those from emercoin. conf
 
 Further. All operations with renaming wallets and so on should only be performed when the node is turned off!
 
@@ -89,7 +89,7 @@ I think you can catch up to 1000.
 This determines the maximum number of outputs in the
 the only transaction that will generate UTXOs for future stamps.
 
-That's all, the program worked, and the addresses were recorded in the file.
+That's all, the program worked and the addresses were recorded in the file.
 
 While we stop working with W1, we return to W0, where we will pay for future stamps.
 To do this, stop the node and switch the wallet.dat file back.
@@ -109,7 +109,7 @@ N - the smaller of 3x:
  - Size of the actual address pool
  - Number of addresses from the AddrPoolSize parameter
 
-The script can be run several times, and it will create one transaction per run,
+The script can be ran several times, and it will create one transaction per run,
 And this way, you can print as many UTXOs as you need.
 
 Money in such a transaction is taken from W0 and transferred to W1. The amount of each output is equal to the price of the stamp.
