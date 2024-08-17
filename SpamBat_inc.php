@@ -7,7 +7,7 @@
 
 //------------------------------------------------------------------------------
 // EMC account in the work wallet
-$AccountName  = ""; // Default account
+$AccountName  = "SpamBat"; // Default account
 
 // Label for sendmany for W0 output TX
 $Label = "Pay to SpamBat";
@@ -65,7 +65,8 @@ function EMC_req($cmd, $params, $errtxt) {
     }
     return $rc['result'];
   } while(false);
-  // Error handler
+  if(empty($errtxt))
+      return "";
   printf("%s\nFail request details: cmd=[%s] and params:\n", $errtxt, $cmd);
   print_r($params);
   exit(1);
@@ -81,7 +82,7 @@ function CheckOpenWallet() {
 }
 
 function ValidStamp(&$rawtx) {
-    $rc = EMC_req('signrawtransaction', array($rawtx, array(), array(), "ALL"), "Unable to validate raw transaction");
+    $rc = EMC_req('signrawtransactionwithkey', array($rawtx, array()), "Unable to validate raw transaction");
     if(!boolval($rc['complete']))
         return false;
     // Check within mempool

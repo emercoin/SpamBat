@@ -10,7 +10,10 @@ include "SpamBat_inc.php";
 CheckOpenWallet();
 
 $unspent_list = array();
-$dummy_vout   = array('data' => '00'); // Hex of the label
+// Label is "SpamBat demo v01"
+// Do not decrease length, otherwise tx-size-small error in 0.8.5
+// After 0.8.6, we can decrease this tail label
+$dummy_vout   = array('data' => '5370616d4261742064656d6f20763031'); // Hex of the label
 
 // There is used full wallet, maybe will be need to add filter for addresses from pool
 $rc = EMC_req('listunspent', array(), "Unable to listunspent");
@@ -53,7 +56,7 @@ foreach($unspent_list as $txid => $vout) {
             continue; // Skip not sufficient or blocked UTXOs
         $new_vin = array(array('txid' => $txid, 'vout' => $n));
         $stamp = EMC_req('createrawtransaction', array($new_vin, $dummy_vout), "Unable to createrawtransaction");
-        $rc = EMC_req('signrawtransaction', array($stamp), "Unable to sign raw transaction, seems like wallet is locked");
+        $rc = EMC_req('signrawtransactionwithwallet', array($stamp), "Unable to sign raw transaction, seems like wallet is locked");
         if($rc['complete']) {
             $hex = $rc['hex'];
             // echo "Created stamp for $$amo\n";

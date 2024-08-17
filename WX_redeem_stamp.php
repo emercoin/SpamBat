@@ -14,7 +14,7 @@ if($stamp_tx == 0) {
     exit(1);
 }
 
-$txid = EMC_req('sendrawtransaction', array($stamp_tx, true), "Unable to broadcast stamp transaction");
+$txid = EMC_req('sendrawtransaction', array($stamp_tx, 0), "Unable to broadcast stamp transaction");
 echo "Burn coins: Sent TX=$txid\n";
 
 ?>
